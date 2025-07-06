@@ -1,0 +1,117 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} Checkout - My Awesome Cart {% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="col my-4">
+    <h2>INDIA-MART Tracker -- Enter your Order Id and Email address to track your order</h2>
+    <div>
+      <ol class="list-group list-group-numbered my-4" id="items"></ol>
+    </div>
+  </div>
+
+  <div class="col my-4">
+    <h2>Enter Address & Other details:</h2>
+    <form class="row g-3" method="post" action="/shop/checkout/">{% csrf_token %}
+      <input type="hidden" name="itemjson" id="itemjson">
+      <div class="col-md-6">
+        <label for="inputName4" class="form-label">Name</label>
+        <input type="text" class="form-control" id="inputName4" name="name">
+      </div>
+
+      <div class="col-md-6">
+        <label for="inputEmail4" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email">
+      </div>
+
+      <div class="col-12">
+        <label for="inputAddress" class="form-label">Address</label>
+        <input type="text" class="form-control" id="address1" placeholder="1234 Main St" name="address1">
+      </div>
+
+      <div class="col-12">
+        <label for="inputAddress2" class="form-label">Address 2</label>
+        <input type="text" class="form-control" id="address2" placeholder="Apartment, studio, or floor" name="address2">
+      </div>
+
+      <div class="col-md-6">
+        <label for="inputCity" class="form-label">City</label>
+        <input type="text" class="form-control" id="iCity" name="city">
+      </div>
+
+      <div class="col-md-4">
+        <label for="inputState" class="form-label">State</label>
+        <input type="text" class="form-control" id="State" placeholder="Enter State" name="state">
+      </div>
+
+      <div class="col-md-2">
+        <label for="inputZip" class="form-label">Zip</label>
+        <input type="text" class="form-control" id="zip_code" name="zip_code">
+      </div>
+
+      <div class="col-12">
+        <label for="inputPhoneNumber" class="form-label">Phone Number</label>
+        <input type="text" class="form-control" id="Phone" placeholder="Phone Number" name="phone">
+      </div>
+
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Place Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  let cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : {};
+  let itemsContainer = document.getElementById('items');
+
+  if (!itemsContainer) {
+    console.error("Element with ID 'items' not found.");
+    return;
+  }
+
+  if (Object.keys(cart).length === 0) {
+    itemsContainer.innerHTML = `
+      <li class="list-group-item text-danger fw-bold">
+        🛒 Your cart is empty. Please add some items to your cart before checking out!
+      </li>`;
+  } else {
+    for (let item in cart) {
+      let name = cart[item].name;
+      let qty = cart[item].qty;
+      let price = cart[item].price;
+      let total = price * qty;
+
+      if (!price) price = 0; // Fallback if price is missing
+
+      let listItem = `
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold">${name}</div>
+            <small>₹${price} x ${qty} = ₹${total}</small>
+          </div>
+          <span class="badge text-bg-primary rounded-pill mt-2 my-2">₹${price}</span>
+          <span class="badge text-bg-primary rounded-pill mt-2">${qty}</span>
+        </li>`;
+       
+
+        
+      itemsContainer.insertAdjacentHTML('beforeend', listItem);
+    }
+
+    document.getElementById('itemjson').value = JSON.stringify(cart);
+  }
+
+  {% if thank %}
+  alert('Thanks for ordering with us. Your order is {{ id }}. Use it to track your order using our order tracker.');
+  localStorage.clear();
+  document.location = "/shop";
+  {% endif %}
+});
+</script>
+{% endblock %}
